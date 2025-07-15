@@ -1,0 +1,15 @@
+# AI Commit Generator
+
+# macOS
+.DS_Store
+
+# Logs  
+*.log
+.commitgen.log
+
+# Environment files (contain API keys)
+.env
+
+# IDE files
+.vscode/
+.idea/

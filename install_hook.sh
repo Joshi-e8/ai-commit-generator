@@ -176,7 +176,7 @@ EOF
     echo -e "${GREEN}✅ Environment file configured${NC}"
 }
 
-# Add .env to .gitignore
+# Add AI commit generator files to .gitignore
 update_gitignore() {
     local repo_root
     repo_root=$(git rev-parse --show-toplevel)
@@ -190,10 +190,11 @@ update_gitignore() {
         return
     fi
     
-    # Add .env to .gitignore
+    # Add AI commit generator files to .gitignore
     echo "" >> "$gitignore"
     echo "# AI Commit Generator" >> "$gitignore"
     echo ".env" >> "$gitignore"
+    echo ".commitgen.yml" >> "$gitignore"
     echo ".commitgen.log" >> "$gitignore"
     
     echo -e "${GREEN}✅ .gitignore updated${NC}"
