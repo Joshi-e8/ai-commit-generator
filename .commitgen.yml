@@ -1,0 +1,143 @@
+# AI Commit Message Generator Configuration
+# This file configures the AI-powered Git commit message generator
+
+# API Configuration
+api:
+  # Supported providers: groq, openrouter, cohere
+  provider: groq
+  
+  # Model configurations for different providers
+  models:
+    groq:
+      default: llama3-70b-8192
+      alternatives:
+        - llama3-8b-8192
+        - mixtral-8x7b-32768
+        - gemma-7b-it
+    
+    openrouter:
+      default: meta-llama/llama-3.1-70b-instruct
+      alternatives:
+        - anthropic/claude-3.5-sonnet
+        - google/gemini-pro-1.5
+        - mistralai/mixtral-8x7b-instruct
+    
+    cohere:
+      default: command-r-plus
+      alternatives:
+        - command-r
+        - command-light
+
+# Commit Message Configuration
+commit:
+  # Maximum characters for commit message (conventional limit is 72)
+  max_chars: 72
+  
+  # Conventional commit types to use
+  types:
+    - feat      # A new feature
+    - fix       # A bug fix
+    - docs      # Documentation only changes
+    - style     # Changes that do not affect the meaning of the code
+    - refactor  # A code change that neither fixes a bug nor adds a feature
+    - perf      # A code change that improves performance
+    - test      # Adding missing tests or correcting existing tests
+    - build     # Changes that affect the build system or external dependencies
+    - ci        # Changes to CI configuration files and scripts
+    - chore     # Other changes that don't modify src or test files
+    - revert    # Reverts a previous commit
+
+  # Common scopes for your project (customize based on your codebase)
+  scopes:
+    - api
+    - auth
+    - ui
+    - db
+    - config
+    - deps
+    - security
+    - performance
+    - i18n
+    - tests
+
+# AI Prompt Configuration
+prompt:
+  # Main prompt template ({{diff}} will be replaced with actual git diff)
+  template: |
+    Generate a conventional commit message under {{max_chars}} characters for the following git diff.
+    
+    Use one of these types: {{types}}
+    
+    If applicable, include a scope in parentheses after the type.
+    
+    Format: type(scope): description
+    
+    Be concise and descriptive. Focus on WHAT changed, not HOW.
+    
+    Git diff:
+    {{diff}}
+    
+    Respond with ONLY the commit message, no explanations or additional text.
+
+  # Alternative prompt styles
+  styles:
+    concise: |
+      Create a conventional commit message (max {{max_chars}} chars) for this diff:
+      {{diff}}
+      
+      Use format: type(scope): description
+      Types: {{types}}
+    
+    detailed: |
+      Analyze this git diff and generate a conventional commit message:
+      
+      {{diff}}
+      
+      Requirements:
+      - Maximum {{max_chars}} characters
+      - Use conventional commit format: type(scope): description
+      - Available types: {{types}}
+      - Be specific about what changed
+      - Include scope if relevant
+      
+      Return only the commit message.
+
+# File Processing Configuration
+processing:
+  # Maximum diff size to send to AI (in characters)
+  max_diff_size: 8000
+  
+  # Files to exclude from diff analysis
+  exclude_patterns:
+    - "*.lock"
+    - "*.log"
+    - "node_modules/*"
+    - ".git/*"
+    - "dist/*"
+    - "build/*"
+    - "*.min.js"
+    - "*.min.css"
+  
+  # Truncate long files in diff
+  truncate_files: true
+  max_file_lines: 100
+
+# Fallback Configuration
+fallback:
+  # Default commit message if AI fails
+  default_message: "chore: update files"
+  
+  # Retry configuration
+  max_retries: 3
+  retry_delay: 1  # seconds
+
+# Debug Configuration
+debug:
+  # Enable debug logging
+  enabled: false
+  
+  # Log file location (relative to repo root)
+  log_file: ".commitgen.log"
+  
+  # Save API requests/responses for debugging
+  save_requests: false
