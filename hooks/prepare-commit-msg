@@ -297,7 +297,9 @@ main() {
     
     # Write commit message
     echo "$message" > "$commit_msg_file"
-    
+
+    # Prevent Git from opening an editor by setting GIT_EDITOR to 'true'
+    export GIT_EDITOR="true"  # 'true' command does nothing and exits successfully    
     log "Generated commit message: $message"
     echo -e "${GREEN}✅ AI-generated commit message: ${BLUE}$message${NC}"
 }
