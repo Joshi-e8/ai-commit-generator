@@ -30,7 +30,7 @@ api:
 
 # Commit Message Configuration
 commit:
-  # Maximum characters for commit message (conventional limit is 72)
+  # Maximum characters for commit message (conventional limit is 250)
   max_chars: 250
   
   # Conventional commit types to use
