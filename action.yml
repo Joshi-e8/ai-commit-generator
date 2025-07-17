@@ -26,8 +26,10 @@ inputs:
 outputs:
   commit_message:
     description: 'Generated commit message'
+    value: ${{ steps.generate.outputs.commit_message }}
   success:
     description: 'Whether message generation was successful'
+    value: ${{ steps.generate.outputs.success }}
 
 runs:
   using: 'composite'
@@ -65,8 +67,16 @@ runs:
           echo "    - ${type}" >> .commitgen.yml
         done
         
-        # Set API key
-        echo "${{ inputs.provider | upper }}_API_KEY=${{ inputs.api_key }}" >> .env
+        # Set API key based on provider
+        if [ "${{ inputs.provider }}" = "groq" ]; then
+          echo "GROQ_API_KEY=${{ inputs.api_key }}" >> .env
+        elif [ "${{ inputs.provider }}" = "openrouter" ]; then
+          echo "OPENROUTER_API_KEY=${{ inputs.api_key }}" >> .env
+        elif [ "${{ inputs.provider }}" = "cohere" ]; then
+          echo "COHERE_API_KEY=${{ inputs.api_key }}" >> .env
+        else
+          echo "GROQ_API_KEY=${{ inputs.api_key }}" >> .env
+        fi
     
     - name: Generate Commit Message
       id: generate
