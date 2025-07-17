@@ -64,48 +64,50 @@ commit:
 prompt:
   # Main prompt template ({{diff}} will be replaced with actual git diff)
   template: |
-    Generate a conventional commit message under {{max_chars}} characters for the following git diff.
-    
-    Use one of these types: {{types}}
-    
+    Generate a conventional commit message under {max_chars} characters for the following git diff.
+
+    Use one of these types: {types}
+
     If applicable, include a scope in parentheses after the type.
-    
+
     Format: type(scope): description
-    
+
     Be concise and descriptive. Focus on WHAT changed, not HOW.
-    
+
+    IMPORTANT: Analyze ALL files in the diff and create a message that summarizes the overall change across all modified files.
+
     Git diff:
-    {{diff}}
-    
+    {diff}
+
     Respond with ONLY the commit message, no explanations or additional text.
 
   # Alternative prompt styles
   styles:
     concise: |
-      Create a conventional commit message (max {{max_chars}} chars) for this diff:
-      {{diff}}
-      
+      Create a conventional commit message (max {max_chars} chars) for this diff:
+      {diff}
+
       Use format: type(scope): description
-      Types: {{types}}
-    
+      Types: {types}
+
     detailed: |
       Analyze this git diff and generate a conventional commit message:
-      
-      {{diff}}
-      
+
+      {diff}
+
       Requirements:
-      - Maximum {{max_chars}} characters
+      - Maximum {max_chars} characters
       - Use conventional commit format: type(scope): description
-      - Available types: {{types}}
+      - Available types: {types}
       - Be specific about what changed
       - Include scope if relevant
-      
+
       Return only the commit message.
 
 # File Processing Configuration
 processing:
   # Maximum diff size to send to AI (in characters)
-  max_diff_size: 8000
+  max_diff_size: 16000
   
   # Files to exclude from diff analysis
   exclude_patterns:
