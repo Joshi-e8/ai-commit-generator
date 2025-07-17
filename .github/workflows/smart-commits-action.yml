@@ -1,0 +1,83 @@
+name: Smart Commits AI Action
+description: 'AI-powered commit message generation for any project'
+author: 'Joshi'
+
+inputs:
+  api_key:
+    description: 'API key for AI provider (Groq, OpenRouter, or Cohere)'
+    required: true
+  provider:
+    description: 'AI provider to use (groq, openrouter, cohere)'
+    required: false
+    default: 'groq'
+  model:
+    description: 'AI model to use'
+    required: false
+    default: 'llama3-70b-8192'
+  max_chars:
+    description: 'Maximum characters for commit message'
+    required: false
+    default: '250'
+
+outputs:
+  commit_message:
+    description: 'Generated commit message'
+    value: ${{ steps.generate.outputs.message }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install Smart Commits AI
+      shell: bash
+      run: |
+        pip install smart-commits-ai==1.0.4
+    
+    - name: Configure Smart Commits AI
+      shell: bash
+      run: |
+        # Create configuration
+        cat > .commitgen.yml << EOF
+        api:
+          provider: ${{ inputs.provider }}
+          models:
+            ${{ inputs.provider }}:
+              default: ${{ inputs.model }}
+        
+        commit:
+          max_chars: ${{ inputs.max_chars }}
+          types:
+            - feat
+            - fix
+            - docs
+            - style
+            - refactor
+            - perf
+            - test
+            - build
+            - ci
+            - chore
+            - revert
+            - remove
+            - config
+        EOF
+        
+        # Set API key
+        echo "${{ inputs.provider | upper }}_API_KEY=${{ inputs.api_key }}" >> .env
+    
+    - name: Generate Commit Message
+      id: generate
+      shell: bash
+      run: |
+        # Generate commit message
+        message=$(smart-commits-ai generate --dry-run | grep "Generated message:" | sed 's/.*Generated message: //')
+        echo "message=$message" >> $GITHUB_OUTPUT
+        echo "Generated commit message: $message"
+
+branding:
+  icon: 'git-commit'
+  color: 'blue'
