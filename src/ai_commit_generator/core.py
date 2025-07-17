@@ -318,8 +318,9 @@ class CommitGenerator:
         if not message or len(message) < 5:
             return False
 
-        # Check if it follows conventional commit format
-        pattern = r"^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?: .+"
+        # Check if it follows conventional commit format using configured types
+        types_pattern = "|".join(self.config.commit_types)
+        pattern = rf"^({types_pattern})(\(.+\))?: .+"
         if not re.match(pattern, message):
             logger.debug(f"Message doesn't match conventional commit format: {message}")
             return False

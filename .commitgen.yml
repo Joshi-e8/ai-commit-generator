@@ -47,6 +47,7 @@ commit:
     - chore     # Other changes that don't modify src or test files
     - revert    # Reverts a previous commit
     - remove    # Remove files or features
+    - config    # Configuration changes
 
   # Common scopes for your project (customize based on your codebase)
   scopes:

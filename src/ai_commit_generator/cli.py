@@ -11,6 +11,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 
+from . import __version__
 from .api_clients import APIError
 from .config import Config, ConfigError
 from .core import CommitGenerator, GitError
@@ -58,7 +59,7 @@ def handle_errors(func):
 
 
 @click.group()
-@click.version_option(version="1.0.0")
+@click.version_option(version=__version__)
 def main():
     """AI-powered Git commit message generator."""
     pass
