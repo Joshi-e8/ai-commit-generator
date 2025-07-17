@@ -1,10 +1,10 @@
 {
   "name": "smart-commits-ai",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "AI-powered Git commit message generator - NPM wrapper for Python package",
   "main": "index.js",
   "bin": {
-    "smart-commits-ai": "./bin/smart-commits-ai.js"
+    "smart-commits-ai": "bin/smart-commits-ai.js"
   },
   "scripts": {
     "install": "node install.js",
@@ -25,7 +25,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Joshi-e8/ai-commit-generator.git"
+    "url": "git+https://github.com/Joshi-e8/ai-commit-generator.git"
   },
   "homepage": "https://github.com/Joshi-e8/ai-commit-generator",
   "bugs": {
@@ -35,10 +35,11 @@
     "node": ">=14.0.0"
   },
   "dependencies": {
-    "cross-spawn": "^7.0.3",
+    "cross-spawn": "^7.0.6",
     "which": "^4.0.0"
   },
   "devDependencies": {
     "jest": "^29.0.0"
-  }
+  },
+  "type": "commonjs"
 }

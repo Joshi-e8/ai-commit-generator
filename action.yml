@@ -1,0 +1,109 @@
+name: 'Smart Commits AI'
+description: 'AI-powered commit message generation for any project'
+author: 'Joshi <joshi@nuox.io>'
+
+inputs:
+  api_key:
+    description: 'API key for AI provider (Groq, OpenRouter, or Cohere)'
+    required: true
+  provider:
+    description: 'AI provider to use (groq, openrouter, cohere)'
+    required: false
+    default: 'groq'
+  model:
+    description: 'AI model to use'
+    required: false
+    default: 'llama3-70b-8192'
+  max_chars:
+    description: 'Maximum characters for commit message'
+    required: false
+    default: '250'
+  commit_types:
+    description: 'Comma-separated list of commit types'
+    required: false
+    default: 'feat,fix,docs,style,refactor,perf,test,build,ci,chore,revert,remove,config'
+
+outputs:
+  commit_message:
+    description: 'Generated commit message'
+  success:
+    description: 'Whether message generation was successful'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install Smart Commits AI
+      shell: bash
+      run: |
+        pip install smart-commits-ai==1.0.4
+    
+    - name: Configure Smart Commits AI
+      shell: bash
+      run: |
+        # Create configuration
+        cat > .commitgen.yml << EOF
+        api:
+          provider: ${{ inputs.provider }}
+          models:
+            ${{ inputs.provider }}:
+              default: ${{ inputs.model }}
+        
+        commit:
+          max_chars: ${{ inputs.max_chars }}
+          types:
+        EOF
+        
+        # Add commit types
+        IFS=',' read -ra TYPES <<< "${{ inputs.commit_types }}"
+        for type in "${TYPES[@]}"; do
+          echo "    - ${type}" >> .commitgen.yml
+        done
+        
+        # Set API key
+        echo "${{ inputs.provider | upper }}_API_KEY=${{ inputs.api_key }}" >> .env
+    
+    - name: Generate Commit Message
+      id: generate
+      shell: bash
+      run: |
+        set +e  # Don't exit on error
+        
+        # Check if there are staged changes
+        if ! git diff --cached --quiet; then
+          echo "📝 Staged changes detected, generating commit message..."
+          
+          # Generate commit message
+          output=$(smart-commits-ai generate --dry-run 2>&1)
+          exit_code=$?
+          
+          if [ $exit_code -eq 0 ]; then
+            message=$(echo "$output" | grep "Generated message:" | sed 's/.*Generated message: //')
+            if [ -n "$message" ]; then
+              echo "commit_message=$message" >> $GITHUB_OUTPUT
+              echo "success=true" >> $GITHUB_OUTPUT
+              echo "✅ Generated commit message: $message"
+            else
+              echo "commit_message=chore: update files" >> $GITHUB_OUTPUT
+              echo "success=false" >> $GITHUB_OUTPUT
+              echo "⚠️ No message generated, using fallback"
+            fi
+          else
+            echo "commit_message=chore: update files" >> $GITHUB_OUTPUT
+            echo "success=false" >> $GITHUB_OUTPUT
+            echo "❌ Generation failed: $output"
+          fi
+        else
+          echo "commit_message=" >> $GITHUB_OUTPUT
+          echo "success=false" >> $GITHUB_OUTPUT
+          echo "ℹ️ No staged changes found"
+        fi
+
+branding:
+  icon: 'git-commit'
+  color: 'blue'

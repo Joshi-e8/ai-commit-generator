@@ -1,83 +1,39 @@
-name: Smart Commits AI Action
-description: 'AI-powered commit message generation for any project'
-author: 'Joshi'
+name: 'Smart Commits AI Demo'
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
 
-inputs:
-  api_key:
-    description: 'API key for AI provider (Groq, OpenRouter, or Cohere)'
-    required: true
-  provider:
-    description: 'AI provider to use (groq, openrouter, cohere)'
-    required: false
-    default: 'groq'
-  model:
-    description: 'AI model to use'
-    required: false
-    default: 'llama3-70b-8192'
-  max_chars:
-    description: 'Maximum characters for commit message'
-    required: false
-    default: '250'
+jobs:
+  ai-commit-demo:
+    runs-on: ubuntu-latest
+    name: 'Generate AI Commit Messages'
 
-outputs:
-  commit_message:
-    description: 'Generated commit message'
-    value: ${{ steps.generate.outputs.message }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-runs:
-  using: 'composite'
-  steps:
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    
-    - name: Install Smart Commits AI
-      shell: bash
-      run: |
-        pip install smart-commits-ai==1.0.4
-    
-    - name: Configure Smart Commits AI
-      shell: bash
-      run: |
-        # Create configuration
-        cat > .commitgen.yml << EOF
-        api:
-          provider: ${{ inputs.provider }}
-          models:
-            ${{ inputs.provider }}:
-              default: ${{ inputs.model }}
-        
-        commit:
-          max_chars: ${{ inputs.max_chars }}
-          types:
-            - feat
-            - fix
-            - docs
-            - style
-            - refactor
-            - perf
-            - test
-            - build
-            - ci
-            - chore
-            - revert
-            - remove
-            - config
-        EOF
-        
-        # Set API key
-        echo "${{ inputs.provider | upper }}_API_KEY=${{ inputs.api_key }}" >> .env
-    
-    - name: Generate Commit Message
-      id: generate
-      shell: bash
-      run: |
-        # Generate commit message
-        message=$(smart-commits-ai generate --dry-run | grep "Generated message:" | sed 's/.*Generated message: //')
-        echo "message=$message" >> $GITHUB_OUTPUT
-        echo "Generated commit message: $message"
+      - name: Generate AI Commit Message
+        id: smart-commits
+        uses: ./  # Use local action for testing
+        with:
+          api_key: ${{ secrets.GROQ_API_KEY }}
+          provider: 'groq'
+          model: 'llama3-70b-8192'
+          max_chars: '250'
 
-branding:
-  icon: 'git-commit'
-  color: 'blue'
+      - name: Display Generated Message
+        run: |
+          echo "🤖 AI Generated Commit Message:"
+          echo "${{ steps.smart-commits.outputs.commit_message }}"
+          echo "Success: ${{ steps.smart-commits.outputs.success }}"
+
+      - name: Use in Actual Commit (Example)
+        if: steps.smart-commits.outputs.success == 'true'
+        run: |
+          echo "Would commit with message: ${{ steps.smart-commits.outputs.commit_message }}"
+          # In real usage, you might do:
+          # git commit -m "${{ steps.smart-commits.outputs.commit_message }}"

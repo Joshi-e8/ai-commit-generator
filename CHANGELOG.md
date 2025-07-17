@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2025-01-17
+
+### 🌍 Universal Installation Support
+- **NPM Package**: Added NPM wrapper for JavaScript/TypeScript teams
+- **Docker Container**: Created containerized version for DevOps teams
+- **GitHub Action**: Built CI/CD integration for automated workflows
+- **Standalone Binaries**: Added PyInstaller build script for dependency-free usage
+- **Universal Install Script**: Created one-line installer for any platform
+
+### 📚 Enhanced Documentation
+- **Universal README**: Updated to emphasize multi-language support
+- **Team Setup Guide**: Added comprehensive team adoption strategies
+- **Installation Methods**: Created detailed guide for all installation options
+- **Real-world Examples**: Added examples for React, Flutter, Go, and other stacks
+
+### 🔧 Improved Configuration
+- **Dynamic Validation**: Fixed commit type validation to use configuration
+- **Config Commit Type**: Added "config" type for configuration changes
+- **Better Error Messages**: Enhanced validation error reporting
+- **Correct Versioning**: Fixed CLI version display
+
+### 🎯 Team Adoption Features
+- **Package.json Integration**: NPM scripts for JavaScript teams
+- **Docker Aliases**: Easy setup for containerized workflows
+- **CI/CD Examples**: GitHub Actions and workflow templates
+- **Multi-platform Support**: Works with any Git repository regardless of language
+
+## [1.0.4] - 2025-01-17
+
+### Fixed
+- Fixed dynamic commit type validation using configuration
+- Updated CLI to show correct version numbers
+- Added "config" commit type for configuration changes
+- Improved error handling for message validation
+
 ## [1.0.3] - 2025-01-17
 
 ### Improved
