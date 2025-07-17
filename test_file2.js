@@ -4,6 +4,7 @@
 
 function functionTwo() {
     // This is a new function in file 2
+    console.log("Function two called");
     return "Hello from file 2";
 }
 

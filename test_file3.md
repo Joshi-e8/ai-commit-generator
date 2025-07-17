@@ -19,3 +19,8 @@ npm test
 ## Notes
 
 This file is part of a multi-file commit test to ensure the AI commit generator properly analyzes all staged files, not just the first one.
+
+## Changelog
+
+- v1.0.0: Initial version
+- v1.1.0: Added enhanced functions and logging
