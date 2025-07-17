@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "smart-commits-ai"
-version = "1.0.3"
+version = "1.0.4"
 description = "AI-powered Git commit message generator that automatically creates conventional commit messages using Groq, OpenRouter, or Cohere APIs. Source: https://github.com/Joshi-e8/ai-commit-generator.git"
 readme = {file = "README.md", content-type = "text/markdown"}
 license = "MIT"

@@ -1,5 +1,0 @@
-# Test file for config changes
-
-This file tests that configuration changes are properly detected and generate appropriate commit messages.
-
-Configuration changes should use the "config" commit type.
