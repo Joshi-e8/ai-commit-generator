@@ -46,3 +46,15 @@ Here are some examples of AI-generated commit messages:
 - **Conventional**: Follows the conventional commits standard
 
 Try it yourself by making changes and running `git commit`!
+
+## Installation
+
+To get started with AI-generated commit messages:
+
+```bash
+pip install smart-commits-ai
+smart-commits-ai install
+echo "GROQ_API_KEY=your_key_here" >> .env
+```
+
+Now every `git commit` will be enhanced with AI! 🚀
