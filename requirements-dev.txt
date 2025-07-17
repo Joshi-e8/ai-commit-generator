@@ -1,0 +1,18 @@
+# AI Commit Generator - Development Dependencies
+# Install with: pip install -r requirements-dev.txt
+
+# Include production dependencies
+-r requirements.txt
+
+# Development and testing dependencies
+pytest>=7.0.0
+pytest-cov>=4.0.0
+black>=22.0.0
+mypy>=1.0.0
+types-requests
+types-PyYAML
+
+# Optional: Additional development tools
+flake8>=5.0.0
+isort>=5.0.0
+pre-commit>=2.20.0

@@ -1,5 +1,10 @@
 # 🤖 AI-Powered Git Commit Message Generator
 
+[![PyPI version](https://badge.fury.io/py/smart-commits-ai.svg)](https://badge.fury.io/py/smart-commits-ai)
+[![Python Support](https://img.shields.io/pypi/pyversions/smart-commits-ai.svg)](https://pypi.org/project/smart-commits-ai/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Downloads](https://pepy.tech/badge/smart-commits-ai)](https://pepy.tech/project/smart-commits-ai)
+
 **Automatically generate conventional commit messages using AI - No backend/frontend required!**
 
 This tool works as a **Git pre-commit hook** that analyzes your staged changes and generates professional commit messages using AI APIs (Groq, OpenRouter, Cohere).
@@ -8,30 +13,27 @@ This tool works as a **Git pre-commit hook** that analyzes your staged changes a
 
 ## 🚀 Quick Start (2 minutes)
 
-### 1. Install Dependencies
+### 1. Install the Package
 ```bash
-# macOS
-brew install jq curl
+# Install from PyPI (recommended)
+pip install smart-commits-ai
 
-# Ubuntu/Debian  
-sudo apt-get install jq curl
+# Or install from source
+pip install git+https://github.com/Joshi-e8/ai-commit-generator.git
 ```
 
 ### 2. Get API Key (Free)
 - **Groq** (Recommended): https://console.groq.com/keys
-- **OpenRouter**: https://openrouter.ai/keys  
+- **OpenRouter**: https://openrouter.ai/keys
 - **Cohere**: https://dashboard.cohere.ai/api-keys
 
 ### 3. Install in Your Project
 ```bash
-# Clone this tool
-git clone https://github.com/your-org/ai-commit-generator.git
-
 # Go to your project
 cd /path/to/your/project
 
-# Install the hook
-/path/to/ai-commit-generator/install_hook.sh
+# Install the Git hook
+smart-commits-ai install
 
 # Add your API key
 echo "GROQ_API_KEY=your_key_here" >> .env
@@ -46,6 +48,25 @@ git commit  # ✨ AI generates: "feat(ui): add Button component with hover effec
 
 ---
 
+## 📦 Installation Methods
+
+### Method 1: PyPI (Recommended)
+```bash
+pip install smart-commits-ai
+```
+
+### Method 2: From Source
+```bash
+git clone https://github.com/your-org/ai-commit-generator.git
+cd ai-commit-generator
+pip install -e .
+```
+
+### Method 3: Legacy Bash Script
+For the original bash-based installation, see [LEGACY.md](LEGACY.md).
+
+---
+
 ## ✨ Features
 
 - **🤖 AI-Powered**: Uses Groq, OpenRouter, or Cohere APIs
@@ -54,7 +75,9 @@ git commit  # ✨ AI generates: "feat(ui): add Button component with hover effec
 - **🔧 Configurable**: Customize prompts, models, and scopes
 - **🛡️ Secure**: Only staged changes sent to AI, no data storage
 - **🔄 Fallback**: Works even if AI fails
-- **📦 Zero Dependencies**: Pure shell scripting
+- **🐍 Python Package**: Easy installation and distribution
+- **🧪 Testable**: Comprehensive test suite and type hints
+- **🎨 Rich CLI**: Beautiful command-line interface with colors
 
 ---
 
@@ -81,16 +104,75 @@ refactor(utils): optimize date formatting functions
 
 ```
 ai-commit-generator/
-├── README.md                 # This file
-├── TEAM_SETUP_GUIDE.md      # Detailed team documentation
-├── install_hook.sh          # One-click installer
-├── .commitgen.yml           # Configuration template
-├── .env.example             # Environment template
-├── hooks/
-│   └── prepare-commit-msg   # Main Git hook script
-└── examples/
-    ├── basic-setup.md
-    └── advanced-config.md
+├── README.md                           # This file
+├── TEAM_SETUP_GUIDE.md                # Detailed team documentation
+├── pyproject.toml                     # Python package configuration
+├── src/
+│   └── ai_commit_generator/
+│       ├── __init__.py                # Package initialization
+│       ├── cli.py                     # Command-line interface
+│       ├── core.py                    # Main commit generation logic
+│       ├── config.py                  # Configuration management
+│       ├── api_clients.py             # AI API clients
+│       └── git_hook.py                # Git hook management
+├── templates/
+│   ├── .commitgen.yml                 # Configuration template
+│   └── .env.example                   # Environment template
+├── tests/                             # Test suite
+├── examples/                          # Usage examples
+└── legacy/                            # Original bash scripts
+    ├── install_hook.sh                # Legacy installer
+    └── hooks/
+        └── prepare-commit-msg         # Legacy hook script
+```
+
+---
+
+## 🖥️ CLI Commands
+
+### Install Hook
+```bash
+# Install Git hook in current repository
+smart-commits-ai install
+
+# Install with configuration files
+smart-commits-ai install --config
+
+# Force overwrite existing hook
+smart-commits-ai install --force
+```
+
+### Manage Installation
+```bash
+# Check installation status
+smart-commits-ai status
+
+# Test with current staged changes
+smart-commits-ai test
+
+# Uninstall hook
+smart-commits-ai uninstall
+```
+
+### Generate Messages
+```bash
+# Generate message for staged changes
+smart-commits-ai generate
+
+# Generate without writing to file (dry run)
+smart-commits-ai generate --dry-run
+
+# Generate and save to specific file
+smart-commits-ai generate --output commit-msg.txt
+```
+
+### Configuration
+```bash
+# Show current configuration
+smart-commits-ai config --show
+
+# Validate configuration
+smart-commits-ai config --validate
 ```
 
 ---
