@@ -57,3 +57,13 @@ htmlcov/
 # Temporary files
 *.tmp
 *.temp
+
+# Node.js dependencies
+node_modules/
+npm-wrapper/node_modules/
+**/node_modules/
+
+# NPM files
+package-lock.json
+npm-wrapper/package-lock.json
+*.tgz
