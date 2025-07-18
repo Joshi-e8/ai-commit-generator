@@ -13,12 +13,14 @@ NC='\033[0m' # No Color
 
 # Package information
 PACKAGE_NAME="smart-commits-ai"
-PACKAGE_VERSION="1.0.4"
+PACKAGE_VERSION="1.1.0"
 
 print_header() {
     echo -e "${BLUE}"
     echo "🤖 Smart Commits AI - Universal Installer"
     echo "========================================"
+    echo "🔒 v1.1.0 - Major Security Release"
+    echo "✅ Enterprise-Ready | 🛡️ Fully Secured"
     echo -e "${NC}"
 }
 
@@ -198,6 +200,7 @@ EOF
 print_next_steps() {
     echo ""
     echo -e "${GREEN}🎉 Installation Complete!${NC}"
+    echo -e "${GREEN}🔒 Smart Commits AI v1.1.0 - Secure & Enterprise-Ready${NC}"
     echo ""
     echo "Next steps:"
     echo "1. Get an API key:"
