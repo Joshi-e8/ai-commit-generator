@@ -99,31 +99,70 @@ check_python() {
 check_pip() {
     local python_cmd="$1"
     print_info "Checking for pip..."
-    
+
+    # First check if pip is available
     if $python_cmd -m pip --version &> /dev/null; then
         print_success "pip is available"
-    else
-        print_error "pip not found!"
-        echo ""
-        echo "Please install pip:"
-        echo "  $python_cmd -m ensurepip --upgrade"
-        echo "  or download get-pip.py from: https://pip.pypa.io/en/stable/installation/"
-        exit 1
+        return 0
     fi
+
+    # Try pip3 command directly
+    if command -v pip3 &> /dev/null; then
+        print_success "pip3 is available"
+        return 0
+    fi
+
+    # Try to install pip using ensurepip
+    print_warning "pip not found, attempting to install..."
+    if $python_cmd -m ensurepip --upgrade &> /dev/null; then
+        print_success "pip installed successfully"
+        return 0
+    fi
+
+    # If all else fails, provide instructions
+    print_error "pip installation failed!"
+    echo ""
+    echo "Please install pip manually:"
+    echo "  Option 1: $python_cmd -m ensurepip --upgrade"
+    echo "  Option 2: brew install python (macOS)"
+    echo "  Option 3: sudo apt install python3-pip (Ubuntu/Debian)"
+    echo "  Option 4: Download get-pip.py from: https://pip.pypa.io/en/stable/installation/"
+    echo ""
+    echo "After installing pip, run the installer again:"
+    echo "  curl -fsSL https://raw.githubusercontent.com/Joshi-e8/ai-commit-generator/master/install.sh | bash"
+    exit 1
 }
 
 install_package() {
     local python_cmd="$1"
     print_info "Installing $PACKAGE_NAME v$PACKAGE_VERSION..."
-    
-    if $python_cmd -m pip install "$PACKAGE_NAME==$PACKAGE_VERSION"; then
+
+    # Try different installation methods
+    local install_success=false
+
+    # Method 1: python -m pip
+    if $python_cmd -m pip install "$PACKAGE_NAME==$PACKAGE_VERSION" &> /dev/null; then
+        install_success=true
+    # Method 2: pip3 command
+    elif command -v pip3 &> /dev/null && pip3 install "$PACKAGE_NAME==$PACKAGE_VERSION" &> /dev/null; then
+        install_success=true
+    # Method 3: user installation
+    elif $python_cmd -m pip install --user "$PACKAGE_NAME==$PACKAGE_VERSION" &> /dev/null; then
+        install_success=true
+    # Method 4: upgrade pip first, then install
+    elif $python_cmd -m pip install --upgrade pip &> /dev/null && $python_cmd -m pip install "$PACKAGE_NAME==$PACKAGE_VERSION" &> /dev/null; then
+        install_success=true
+    fi
+
+    if [ "$install_success" = true ]; then
         print_success "Installation successful!"
     else
         print_error "Installation failed!"
         echo ""
         echo "Try manual installation:"
-        echo "  $python_cmd -m pip install --user $PACKAGE_NAME"
-        echo "  or: $python_cmd -m pip install --upgrade pip && $python_cmd -m pip install $PACKAGE_NAME"
+        echo "  $python_cmd -m pip install --user $PACKAGE_NAME==$PACKAGE_VERSION"
+        echo "  or: pip3 install $PACKAGE_NAME==$PACKAGE_VERSION"
+        echo "  or: $python_cmd -m pip install --upgrade pip && $python_cmd -m pip install $PACKAGE_NAME==$PACKAGE_VERSION"
         exit 1
     fi
 }
