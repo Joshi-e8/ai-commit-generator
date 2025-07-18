@@ -2,6 +2,7 @@
 
 import logging
 import os
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -15,6 +16,87 @@ class ConfigError(Exception):
     """Configuration-related errors."""
 
     pass
+
+
+class SecurityError(Exception):
+    """Security-related errors."""
+
+    pass
+
+
+def validate_file_path(base_path: Path, file_path: Path) -> Path:
+    """Validate file path is within base directory and safe.
+
+    Args:
+        base_path: Base directory path
+        file_path: File path to validate
+
+    Returns:
+        Validated and resolved file path
+
+    Raises:
+        SecurityError: If path is unsafe or outside base directory
+    """
+    try:
+        # Resolve paths
+        resolved_base = base_path.resolve()
+        resolved_file = (base_path / file_path).resolve()
+
+        # Ensure file is within base directory
+        resolved_file.relative_to(resolved_base)
+
+        # Check for suspicious path components
+        path_str = str(resolved_file)
+        if any(component in path_str for component in ['..', '~', '$']):
+            raise SecurityError(f"Unsafe path component in: {file_path}")
+
+        return resolved_file
+
+    except ValueError:
+        raise SecurityError(f"Path traversal attempt: {file_path}")
+    except Exception as e:
+        raise SecurityError(f"Invalid file path: {file_path} - {e}")
+
+
+def secure_yaml_load(file_path: Path) -> Dict[str, Any]:
+    """Securely load YAML file with validation.
+
+    Args:
+        file_path: Path to YAML file
+
+    Returns:
+        Parsed YAML content as dictionary
+
+    Raises:
+        SecurityError: If file is unsafe or invalid
+        ConfigError: If YAML is malformed
+    """
+    if not file_path.exists():
+        return {}
+
+    # Validate file size (prevent DoS)
+    file_size = file_path.stat().st_size
+    if file_size > 1024 * 1024:  # 1MB limit
+        raise SecurityError("Configuration file too large")
+
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            # Use safe_load to prevent code execution
+            content = yaml.safe_load(f)
+
+        # Validate content type
+        if content is None:
+            return {}
+
+        if not isinstance(content, dict):
+            raise SecurityError("Configuration must be a dictionary")
+
+        return content
+
+    except yaml.YAMLError as e:
+        raise ConfigError(f"Invalid YAML syntax: {e}")
+    except Exception as e:
+        raise SecurityError(f"Failed to load configuration: {e}")
 
 
 class Config:
@@ -71,8 +153,13 @@ class Config:
             ],
         },
         "processing": {
-            "max_diff_size": 8000,
+            "max_diff_size": 4000,  # Reduced for security
             "exclude_patterns": [
+                "*.key",
+                "*.pem",
+                "*.p12",
+                "*.env*",
+                "secrets/*",
                 "*.lock",
                 "*.log",
                 "node_modules/*",
@@ -84,6 +171,13 @@ class Config:
             ],
             "truncate_files": True,
             "max_file_lines": 100,
+        },
+        "security": {
+            "validate_inputs": True,
+            "sanitize_logs": True,
+            "max_log_size": 10485760,  # 10MB
+            "timeout": 30,
+            "verify_ssl": True,
         },
         "fallback": {
             "default_message": "chore: update files",
@@ -102,10 +196,19 @@ class Config:
 
         Args:
             repo_root: Root directory of the Git repository. If None, will try to detect.
+
+        Raises:
+            SecurityError: If repository path is invalid or unsafe
+            ConfigError: If configuration cannot be loaded
         """
         self.repo_root = repo_root or self._find_repo_root()
-        self.config_file = self.repo_root / ".commitgen.yml"
-        self.env_file = self.repo_root / ".env"
+
+        # Validate repository root
+        self._validate_repo_root()
+
+        # Securely validate configuration file paths
+        self.config_file = validate_file_path(self.repo_root, Path(".commitgen.yml"))
+        self.env_file = validate_file_path(self.repo_root, Path(".env"))
 
         # Load configuration
         self._config = self._load_config()
@@ -120,18 +223,48 @@ class Config:
             current = current.parent
         raise ConfigError("Not in a Git repository")
 
+    def _validate_repo_root(self) -> None:
+        """Validate repository root path for security.
+
+        Raises:
+            SecurityError: If repository path is unsafe
+        """
+        if not self.repo_root or not isinstance(self.repo_root, Path):
+            raise SecurityError("Invalid repository root")
+
+        # Resolve path and check existence
+        try:
+            resolved_path = self.repo_root.resolve()
+        except Exception as e:
+            raise SecurityError(f"Cannot resolve repository path: {e}")
+
+        if not resolved_path.exists():
+            raise SecurityError("Repository path does not exist")
+
+        if not (resolved_path / ".git").exists():
+            raise SecurityError("Not a Git repository")
+
+        # Check for suspicious path components
+        path_str = str(resolved_path)
+        if any(suspicious in path_str for suspicious in ['/proc/', '/sys/', '/dev/']):
+            raise SecurityError("Access to system directories not allowed")
+
+        # Update repo_root to resolved path
+        self.repo_root = resolved_path
+
     def _load_config(self) -> Dict[str, Any]:
-        """Load configuration from .commitgen.yml file."""
+        """Load configuration from .commitgen.yml file securely."""
         config = self.DEFAULT_CONFIG.copy()
 
         if self.config_file.exists():
             try:
-                with open(self.config_file, "r", encoding="utf-8") as f:
-                    user_config = yaml.safe_load(f) or {}
+                # Use secure YAML loading
+                user_config = secure_yaml_load(self.config_file)
                 config = self._merge_config(config, user_config)
                 logger.debug(f"Loaded configuration from {self.config_file}")
-            except yaml.YAMLError as e:
-                raise ConfigError(f"Invalid YAML in {self.config_file}: {e}")
+            except (SecurityError, ConfigError):
+                # Re-raise security and config errors as-is
+                raise
             except Exception as e:
                 raise ConfigError(f"Error reading {self.config_file}: {e}")
         else:
@@ -270,7 +403,7 @@ Respond with ONLY the commit message, no explanations or additional text."""
         return template
 
     def validate(self) -> None:
-        """Validate the configuration."""
+        """Validate the configuration with security checks."""
         # Validate provider
         valid_providers = ["groq", "openrouter", "cohere"]
         if self.provider not in valid_providers:
@@ -278,18 +411,30 @@ Respond with ONLY the commit message, no explanations or additional text."""
                 f"Invalid provider '{self.provider}'. Must be one of: {valid_providers}"
             )
 
-        # Validate API key exists
+        # Validate API key exists and format
         try:
-            self.api_key
+            api_key = self.api_key
+            if len(api_key) < 20 or len(api_key) > 200:
+                raise SecurityError("API key length is suspicious")
         except ConfigError:
             raise ConfigError(f"API key not configured for provider '{self.provider}'")
 
-        # Validate numeric values
-        if self.max_chars <= 0:
-            raise ConfigError("max_chars must be positive")
-        if self.max_diff_size <= 0:
-            raise ConfigError("max_diff_size must be positive")
-        if self.max_retries < 0:
-            raise ConfigError("max_retries must be non-negative")
-        if self.retry_delay < 0:
-            raise ConfigError("retry_delay must be non-negative")
+        # Validate numeric values with security limits
+        if self.max_chars <= 0 or self.max_chars > 500:
+            raise ConfigError("max_chars must be between 1 and 500")
+        if self.max_diff_size <= 0 or self.max_diff_size > 50000:
+            raise SecurityError("max_diff_size must be between 1 and 50000")
+        if self.max_retries < 0 or self.max_retries > 10:
+            raise ConfigError("max_retries must be between 0 and 10")
+        if self.retry_delay < 0 or self.retry_delay > 60:
+            raise ConfigError("retry_delay must be between 0 and 60 seconds")
+
+        # Validate security settings
+        security_config = self._config.get("security", {})
+        timeout = security_config.get("timeout", 30)
+        if timeout <= 0 or timeout > 300:
+            raise SecurityError("timeout must be between 1 and 300 seconds")
+
+        max_log_size = security_config.get("max_log_size", 10485760)
+        if max_log_size <= 0 or max_log_size > 104857600:  # 100MB max
+            raise SecurityError("max_log_size must be between 1 and 100MB")

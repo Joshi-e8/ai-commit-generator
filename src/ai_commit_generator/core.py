@@ -22,12 +22,90 @@ import fnmatch
 import logging
 import re
 import subprocess
+import functools
+from pathlib import Path
 from typing import Optional
 
 from .api_clients import APIError, create_client
 from .config import Config
 
 logger = logging.getLogger(__name__)
+
+
+class SecurityError(Exception):
+    """Exception raised for security-related errors."""
+    pass
+
+
+class GitError(Exception):
+    """Exception raised for Git-related errors."""
+    pass
+
+
+def secure_subprocess_run(cmd: list, cwd: Optional[Path] = None, timeout: int = 30, **kwargs) -> subprocess.CompletedProcess:
+    """Secure wrapper for subprocess.run with validation and timeouts."""
+
+    # Validate command
+    if not cmd or not isinstance(cmd, list):
+        raise SecurityError("Invalid command")
+
+    # Validate all command components are strings
+    if not all(isinstance(arg, str) for arg in cmd):
+        raise SecurityError("All command arguments must be strings")
+
+    # Validate working directory
+    if cwd is not None:
+        if not isinstance(cwd, Path):
+            cwd = Path(cwd)
+        cwd = cwd.resolve()
+        if not cwd.exists():
+            raise SecurityError(f"Working directory does not exist: {cwd}")
+        if not (cwd / ".git").exists():
+            raise SecurityError("Not a Git repository")
+
+    # Set secure defaults
+    secure_kwargs = {
+        'capture_output': True,
+        'text': True,
+        'check': True,
+        'timeout': timeout,
+        'shell': False,  # Never use shell
+        **kwargs
+    }
+
+    try:
+        return subprocess.run(cmd, cwd=cwd, **secure_kwargs)
+    except subprocess.TimeoutExpired:
+        raise SecurityError(f"Command timed out after {timeout} seconds")
+    except subprocess.CalledProcessError as e:
+        raise GitError(f"Git command failed: {e}")
+
+
+def sanitize_repo_path(path: str) -> Path:
+    """Sanitize and validate repository path."""
+    if not path or not isinstance(path, str):
+        raise SecurityError("Invalid repository path")
+
+    # Convert to Path and resolve
+    try:
+        clean_path = Path(path).resolve()
+    except Exception as e:
+        raise SecurityError(f"Invalid path: {e}")
+
+    # Check if path exists
+    if not clean_path.exists():
+        raise SecurityError("Repository path does not exist")
+
+    # Check if it's a Git repository
+    if not (clean_path / ".git").exists():
+        raise SecurityError("Not a Git repository")
+
+    # Additional security checks
+    path_str = str(clean_path)
+    if any(suspicious in path_str for suspicious in ['/proc/', '/sys/', '/dev/']):
+        raise SecurityError("Access to system directories not allowed")
+
+    return clean_path
 
 
 class GitError(Exception):
@@ -124,20 +202,26 @@ class CommitGenerator:
 
         Raises:
             GitError: If git command fails
+            SecurityError: If repository path is invalid
         """
         try:
-            result = subprocess.run(
+            # Validate and sanitize repository path
+            repo_path = sanitize_repo_path(str(self.config.repo_root))
+
+            # Use secure subprocess wrapper
+            result = secure_subprocess_run(
                 ["git", "diff", "--cached"],
-                cwd=self.config.repo_root,
-                capture_output=True,
-                text=True,
-                check=True,
+                cwd=repo_path,
+                timeout=30
             )
             return result.stdout
-        except subprocess.CalledProcessError as e:
-            raise GitError(f"Failed to get staged diff: {e}")
+        except (SecurityError, GitError):
+            # Re-raise security and git errors as-is
+            raise
         except FileNotFoundError:
             raise GitError("Git command not found. Please ensure Git is installed.")
+        except Exception as e:
+            raise GitError(f"Failed to get staged diff: {e}")
 
     def _process_diff(self, diff: str) -> str:
         """Process and filter the diff content.
@@ -283,14 +367,20 @@ class CommitGenerator:
         )
 
     def _clean_message(self, message: str) -> str:
-        """Clean and normalize the generated message.
+        """Clean and normalize the generated message with security validation.
 
         Args:
             message: Raw message from AI
 
         Returns:
-            Cleaned message
+            Cleaned and validated message
+
+        Raises:
+            SecurityError: If message contains suspicious content
         """
+        if not message or not isinstance(message, str):
+            raise SecurityError("Invalid message input")
+
         # Remove leading/trailing whitespace
         message = message.strip()
 
@@ -300,9 +390,35 @@ class CommitGenerator:
         # Remove quotes if present
         message = message.strip("\"'")
 
+        # Security validation - check for suspicious patterns
+        suspicious_patterns = [
+            r'<script',
+            r'javascript:',
+            r'data:',
+            r'vbscript:',
+            r'onload=',
+            r'onerror=',
+            r'\x00',  # Null bytes
+            r'\.\./',  # Path traversal
+            r'\\\\',   # UNC paths
+            r'[;&|`$]',  # Command injection characters
+        ]
+
+        for pattern in suspicious_patterns:
+            if re.search(pattern, message, re.IGNORECASE):
+                logger.warning(f"Suspicious pattern detected in message: {pattern}")
+                raise SecurityError(f"Message contains suspicious content")
+
+        # Remove potentially dangerous characters
+        message = re.sub(r'[^\w\s\(\)\:\-\.\,\!]', '', message)
+
+        # Validate length constraints
+        if len(message) < 5:
+            raise SecurityError("Message too short (minimum 5 characters)")
+
         # Ensure it doesn't exceed max length
         if len(message) > self.config.max_chars:
-            message = message[: self.config.max_chars].rstrip()
+            message = message[:self.config.max_chars].rstrip()
 
         return message
 

@@ -97,8 +97,8 @@ class GitHookManager:
         # Write hook file
         try:
             self.hook_file.write_text(hook_content, encoding="utf-8")
-            # Make executable
-            self.hook_file.chmod(self.hook_file.stat().st_mode | stat.S_IEXEC)
+            # Set secure permissions: owner read/write/execute, group read, others none
+            self.hook_file.chmod(0o750)
             return True
         except Exception as e:
             raise GitError(f"Failed to install hook: {e}")

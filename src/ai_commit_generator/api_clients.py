@@ -98,9 +98,17 @@ class APIClient(ABC):
         """
         try:
             logger.debug(f"Making API request to {url}")
-            response = self.session.post(url, headers=headers, json=data, timeout=30)
+            response = self.session.post(
+                url,
+                headers=headers,
+                json=data,
+                timeout=30,
+                verify=True  # Ensure SSL verification
+            )
             response.raise_for_status()
             return response.json()
+        except requests.exceptions.SSLError:
+            raise APIError("SSL verification failed")
         except requests.exceptions.Timeout:
             raise APIError("API request timed out")
         except requests.exceptions.HTTPError as e:

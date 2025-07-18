@@ -2,6 +2,7 @@
 
 import functools
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Optional
@@ -13,11 +14,22 @@ from rich.text import Text
 
 from . import __version__
 from .api_clients import APIError
-from .config import Config, ConfigError
+from .config import Config, ConfigError, SecurityError
 from .core import CommitGenerator, GitError
 from .git_hook import GitHookManager
 
 console = Console()
+
+
+def mask_sensitive_data(data: str, visible_chars: int = 4) -> str:
+    """Safely mask sensitive data for display."""
+    if not data or not isinstance(data, str):
+        return "[INVALID]"
+
+    if len(data) <= visible_chars:
+        return "*" * len(data)
+
+    return data[:visible_chars] + "*" * (len(data) - visible_chars)
 
 
 def print_banner():
@@ -32,12 +44,15 @@ def print_banner():
 
 
 def handle_errors(func):
-    """Decorator to handle common errors."""
+    """Decorator to handle common errors securely."""
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
+        except SecurityError as e:
+            console.print(f"[red]❌ Security Error:[/red] {e}")
+            sys.exit(1)
         except ConfigError as e:
             console.print(f"[red]❌ Configuration Error:[/red] {e}")
             sys.exit(1)
@@ -48,10 +63,17 @@ def handle_errors(func):
             console.print(f"[red]❌ API Error:[/red] {e}")
             sys.exit(1)
         except Exception as e:
-            console.print(f"[red]❌ Unexpected Error:[/red] {e}")
-            if os.getenv("DEBUG"):
-                import traceback
+            # Log full error for debugging but show generic message to user
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error in {func.__name__}: {e}", exc_info=True)
 
+            console.print("[red]❌ An error occurred. Check logs for details.[/red]")
+
+            # Only show full error in debug mode
+            if os.getenv("DEBUG"):
+                console.print(f"[dim]Debug info: {e}[/dim]")
+                import traceback
                 traceback.print_exc()
             sys.exit(1)
 
@@ -181,10 +203,11 @@ def config(show: bool, validate: bool):
         console.print(f"Config file: [dim]{cfg.config_file}[/dim]")
         console.print(f"Env file: [dim]{cfg.env_file}[/dim]")
 
-        # Check API key
+        # Check API key (securely masked)
         try:
             api_key = cfg.api_key
-            console.print(f"API key: [green]✅ Configured[/green] ({api_key[:8]}...)")
+            masked_key = mask_sensitive_data(api_key, 4)
+            console.print(f"API key: [green]✅ Configured[/green] ({masked_key})")
         except ConfigError:
             console.print("API key: [red]❌ Not configured[/red]")
 
