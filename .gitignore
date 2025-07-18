@@ -66,4 +66,4 @@ npm-wrapper/node_modules/
 # NPM files
 package-lock.json
 npm-wrapper/package-lock.json
-*.tgz
+*.tgzdist/
