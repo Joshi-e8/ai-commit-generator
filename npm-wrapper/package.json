@@ -1,13 +1,12 @@
 {
   "name": "smart-commits-ai",
-  "version": "1.1.1",
-  "description": "AI-powered Git commit message generator - NPM wrapper for Python package",
-  "main": "index.js",
+  "version": "2.0.0",
+  "description": "AI-powered Git commit message generator - Pure Node.js implementation (no Python required)",
+  "main": "lib/ai-client.js",
   "bin": {
     "smart-commits-ai": "bin/smart-commits-ai.js"
   },
   "scripts": {
-    "install": "node install.js",
     "test": "node test.js"
   },
   "keywords": [
@@ -19,7 +18,10 @@
     "groq",
     "openrouter",
     "cohere",
-    "developer-tools"
+    "developer-tools",
+    "nodejs",
+    "pure-javascript",
+    "no-python"
   ],
   "author": "Joshi <joshi@nuox.io>",
   "license": "MIT",
@@ -34,10 +36,7 @@
   "engines": {
     "node": ">=14.0.0"
   },
-  "dependencies": {
-    "cross-spawn": "^7.0.6",
-    "which": "^4.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "jest": "^29.0.0"
   },
