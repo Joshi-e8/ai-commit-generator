@@ -12,7 +12,7 @@ const path = require('path');
 class SmartCommitsInstaller {
     constructor() {
         this.packageName = 'smart-commits-ai';
-        this.version = '1.1.0';
+        this.version = '1.1.1';
     }
 
     async checkPython() {
