@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2025-01-18
+
+### 🔧 **Architecture Compatibility Fix**
+- **Apple Silicon Support**: Fixed architecture compatibility issue on ARM64 (Apple Silicon) systems
+- **Universal Binary Support**: Ensured `charset-normalizer` and `requests` dependencies use universal2 wheels
+- **Installation Instructions**: Added guidance for resolving architecture mismatches
+- **Cross-Platform Compatibility**: Improved compatibility across x86_64 and ARM64 architectures
+
+### 🐛 **Bug Fixes**
+- **ImportError Resolution**: Fixed `dlopen` error when loading `charset_normalizer` on Apple Silicon
+- **Dependency Management**: Updated dependency installation to use `--no-cache-dir --force-reinstall` for clean installs
+- **Package Compatibility**: Ensured all dependencies are compatible with both Intel and Apple Silicon Macs
+
+### 📦 **Package Updates**
+- **PyPI Package**: Updated to version 1.1.2 with architecture fixes
+- **NPM Package**: Updated to version 2.0.1 with improved compatibility notes
+
 ## [1.1.0] - 2024-12-19
 
 ### 🔒 **MAJOR SECURITY RELEASE**

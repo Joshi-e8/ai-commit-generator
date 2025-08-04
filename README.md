@@ -400,6 +400,8 @@ tail -f .commitgen.log
 | "jq: command not found" | Install jq: `brew install jq` or `apt install jq` |
 | "Rate limit exceeded" | Wait 1 minute or switch to different provider |
 | "Hook not working" | Reinstall: `./install_hook.sh` |
+| **"ImportError: dlopen... incompatible architecture"** | **Apple Silicon Fix**: `pip3 uninstall -y charset-normalizer requests && pip3 install --no-cache-dir --force-reinstall charset-normalizer requests` |
+| **"ModuleNotFoundError: No module named 'chardet'"** | **Architecture mismatch**: Run the Apple Silicon fix above |
 
 ---
 
