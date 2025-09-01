@@ -12,7 +12,7 @@ All clients implement the same APIClient interface and handle:
 - Response parsing and validation
 
 Example:
-    client = create_client("groq", api_key, "llama3-70b-8192")
+    client = create_client("groq", api_key, "llama-3.3-70b-versatile")
     message = client.generate_commit_message(prompt)
 """
 
@@ -129,7 +129,7 @@ class APIClient(ABC):
 class GroqClient(APIClient):
     """Groq API client."""
 
-    def __init__(self, api_key: str, model: str = "llama3-70b-8192", **kwargs):
+    def __init__(self, api_key: str, model: str = "llama-3.3-70b-versatile", **kwargs):
         super().__init__(api_key, model, **kwargs)
         self.base_url = "https://api.groq.com/openai/v1"
 

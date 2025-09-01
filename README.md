@@ -375,13 +375,13 @@ prompt:
 ### Multiple Models
 ```bash
 # Fast and efficient
-GROQ_MODEL=llama3-8b-8192
+GROQ_MODEL=llama-3.1-8b-instant
 
 # More detailed
-GROQ_MODEL=llama3-70b-8192
+GROQ_MODEL=llama-3.3-70b-versatile
 
-# Creative
-GROQ_MODEL=mixtral-8x7b-32768
+# Creative (if available)
+GROQ_MODEL=gemma2-9b-it
 ```
 
 ### Debug Mode

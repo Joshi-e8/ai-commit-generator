@@ -108,8 +108,8 @@ class Config:
             "provider": "groq",
             "models": {
                 "groq": {
-                    "default": "llama3-70b-8192",
-                    "alternatives": ["llama3-8b-8192", "mixtral-8x7b-32768"],
+                    "default": "llama-3.3-70b-versatile",
+                    "alternatives": ["llama-3.1-8b-instant", "llama-3.3-70b-versatile"],
                 },
                 "openrouter": {
                     "default": "meta-llama/llama-3.1-70b-instruct",
@@ -311,7 +311,7 @@ class Config:
         if env_model:
             return env_model
 
-        return models.get("default", "llama3-70b-8192")
+        return models.get("default", "llama-3.3-70b-versatile")
 
     @property
     def api_key(self) -> str:

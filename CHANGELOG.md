@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 2025-09-01
+
+### 🔧 **Critical Model Update**
+- **Groq Model Deprecation Fix**: Updated deprecated Groq models to current versions
+  - `llama3-70b-8192` → `llama-3.3-70b-versatile` (default)
+  - `llama3-8b-8192` → `llama-3.1-8b-instant`
+  - `mixtral-8x7b-32768` → `gemma2-9b-it`
+- **API Compatibility**: Fixed "Unknown request URL" errors caused by deprecated models
+- **Configuration Updates**: Updated all configuration files with new model names
+- **Documentation**: Updated all references to use current model names
+
+### 🐛 **Bug Fixes**
+- **API Errors**: Resolved "model_decommissioned" errors from Groq API
+- **NPM Wrapper**: Updated Node.js client to use new default models
+- **Configuration Files**: Updated `.env`, `.commitgen.yml`, and Python defaults
+
+### 📦 **Package Updates**
+- **PyPI Package**: Updated to version 1.1.3 with model fixes
+- **NPM Package**: Updated to version 2.0.2 with model fixes
+
 ## [1.1.2] - 2025-01-18
 
 ### 🔧 **Architecture Compatibility Fix**

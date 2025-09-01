@@ -6,7 +6,7 @@ staged changes and creates professional, conventional commit messages using
 various AI providers (Groq, OpenRouter, Cohere).
 """
 
-__version__ = "1.1.2"
+__version__ = "1.1.3"
 __author__ = "AI Commit Generator Team"
 __email__ = "team@ai-commit-generator.dev"
 

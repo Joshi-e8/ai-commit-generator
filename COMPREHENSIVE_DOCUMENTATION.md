@@ -238,8 +238,8 @@ api:
   provider: "groq"  # groq, openrouter, cohere
   models:
     groq:
-      default: "llama3-70b-8192"
-      alternatives: ["llama3-8b-8192", "mixtral-8x7b-32768"]
+      default: "llama-3.3-70b-versatile"
+      alternatives: ["llama-3.1-8b-instant", "llama-3.3-70b-versatile"]
     openrouter:
       default: "meta-llama/llama-3.1-70b-instruct"
       alternatives: ["anthropic/claude-3.5-sonnet", "google/gemini-pro-1.5"]
@@ -340,7 +340,7 @@ smart-commits-ai config --show --section api
 smart-commits-ai config set api.provider groq
 
 # Set model
-smart-commits-ai config set api.models.groq.default llama3-8b-8192
+smart-commits-ai config set api.models.groq.default llama-3.1-8b-instant
 
 # Set commit message length
 smart-commits-ai config set commit.max_chars 50
@@ -608,7 +608,7 @@ class APIClient(ABC):
 class GroqClient(APIClient):
     """Groq API client for fast inference."""
 
-    def __init__(self, api_key: str, model: str = "llama3-70b-8192"):
+    def __init__(self, api_key: str, model: str = "llama-3.3-70b-versatile"):
         super().__init__(api_key, model)
         self.base_url = "https://api.groq.com/openai/v1"
 
