@@ -8,9 +8,12 @@ set -e
 echo "🚀 Publishing Smart Commits AI v2.0.2 to NPM"
 echo "============================================="
 
-# Check if we're in the npm-wrapper directory
-if [ ! -f "package.json" ]; then
-    echo "❌ Error: package.json not found. Please run from npm-wrapper directory."
+# Check if we're in the project root and navigate to npm-wrapper
+if [ -f "npm-wrapper/package.json" ]; then
+    echo "📁 Navigating to npm-wrapper directory..."
+    cd npm-wrapper
+elif [ ! -f "package.json" ]; then
+    echo "❌ Error: package.json not found. Please run from project root or npm-wrapper directory."
     exit 1
 fi
 
@@ -27,6 +30,13 @@ if ! command -v npm &> /dev/null; then
 fi
 
 echo "🔍 Checking package integrity..."
+# Create lockfile if it doesn't exist
+if [ ! -f "package-lock.json" ]; then
+    echo "📦 Creating package-lock.json..."
+    npm i --package-lock-only
+fi
+
+# Run audit
 npm audit --audit-level=high
 
 echo ""
